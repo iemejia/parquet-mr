@@ -145,7 +145,6 @@
         <!-- Ensure that the specific classes are available during test compile but not included in jar -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.8</version>
         <executions>
           <execution>
             <id>add-test-sources</id>

@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>16</version>
+    <version>21</version>
   </parent>
 
   <groupId>org.apache.parquet</groupId>
@@ -72,7 +72,8 @@
     <maven.compiler.target>${targetJavaVersion}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <github.global.server>github</github.global.server>
-    <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+    <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
+    <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
     <jackson.groupId>org.codehaus.jackson</jackson.groupId>
     <jackson.version>1.9.13</jackson.version>
     <jackson.package>org.codehaus.jackson</jackson.package>
@@ -160,7 +161,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
+        <version>3.0.1</version>
         <reportSets>
           <reportSet><!-- by default, id = "default" -->
             <reports><!-- select non-aggregate reports -->
@@ -185,7 +186,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.5.2</version>
+        <version>2.7</version>
         <configuration>
           <formats>
             <format>html</format>
@@ -212,6 +213,7 @@
         <plugin>
           <!-- Disable the source artifact from ASF parent -->
           <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.1.1</version>
           <executions>
             <execution>
               <id>source-release-assembly</id>
@@ -223,12 +225,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>2.7</version>
+          <version>3.1.0</version>
         </plugin>
 
         <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.3.1</version>
+          <version>3.0.0-M2</version>
           <dependencies>
             <dependency>
               <groupId>org.semver</groupId>
@@ -299,10 +301,11 @@
           </execution>
          </executions>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.2.1</version>
           <executions>
             <execution>
               <phase>package</phase>
@@ -340,6 +343,7 @@
             </execution>
           </executions>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
@@ -359,8 +363,27 @@
             </execution>
           </executions>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.scala-tools</groupId>
+          <artifactId>maven-scala-plugin</artifactId>
+          <version>2.15.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>com.mycila.maven-license-plugin</groupId>
@@ -389,7 +412,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-remote-resources-plugin</artifactId>
-          <version>1.5</version>
+          <version>1.6.0</version>
           <configuration>
             <skip>true</skip>
           </configuration>
@@ -409,7 +432,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.10</version>
+        <version>3.0.0-M3</version>
         <executions>
           <execution>
             <goals>
@@ -419,10 +442,11 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.10</version>
+        <version>3.0.0-M3</version>
         <configuration>
           <argLine>-Xmx512m</argLine>
           <systemPropertyVariables>
@@ -440,10 +464,11 @@
           </excludes>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <phase>validate</phase>
@@ -453,10 +478,11 @@
          </execution>
        </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <version>0.12</version>
+        <version>0.13</version>
         <executions>
           <execution>
             <phase>test</phase>
@@ -505,7 +531,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.7</version>
+            <version>3.0.0</version>
             <reportSets>
               <reportSet>
                 <reports>
@@ -534,7 +560,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-site-plugin</artifactId>
-            <version>3.3</version>
+            <version>3.7.1</version>
             <configuration>
               <skipDeploy>true</skipDeploy>
             </configuration>
@@ -542,7 +568,7 @@
           <plugin>
             <groupId>com.github.github</groupId>
             <artifactId>site-maven-plugin</artifactId>
-            <version>0.8</version>
+            <version>0.12</version>
             <configuration>
               <message>Creating site for ${project.version}</message>
               <path>${project.distributionManagement.site.url}</path>
