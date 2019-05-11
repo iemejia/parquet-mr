@@ -55,7 +55,7 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
   private final Class<? extends IndexedRecord> specificClass;
 
   private final GenericData model;
-  private final Map<Schema.Field, Object> recordDefaults = new HashMap<Schema.Field, Object>();
+  private final Map<Schema.Field, Object> recordDefaults = new HashMap<>();
 
   public AvroIndexedRecordConverter(MessageType parquetSchema, Schema avroSchema) {
     this(parquetSchema, avroSchema, SpecificData.get());
@@ -81,7 +81,7 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
 
     this.model = this.specificClass == null ? GenericData.get() : baseModel;
 
-    Map<String, Integer> avroFieldIndexes = new HashMap<String, Integer>();
+    Map<String, Integer> avroFieldIndexes = new HashMap<>();
     int avroFieldIndex = 0;
     for (Schema.Field field: avroSchema.getFields()) {
         avroFieldIndexes.put(field.name(), avroFieldIndex++);
@@ -273,7 +273,7 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
       if (fixedClass != null) {
         try {
           this.fixedClassCtor = 
-              fixedClass.getConstructor(new Class[] { byte[].class });
+              fixedClass.getConstructor(byte[].class);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -334,7 +334,6 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
         // the element type is the repeated type (and required)
         converter = newConverter(elementSchema, repeatedType, model, new ParentValueContainer() {
           @Override
-          @SuppressWarnings("unchecked")
           public void add(Object value) {
             array.add(value);
           }
@@ -352,7 +351,7 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
 
     @Override
     public void start() {
-      array = new GenericData.Array<Object>(0, avroSchema);
+      array = new GenericData.Array<>(0, avroSchema);
     }
 
     @Override
@@ -471,7 +470,7 @@ class AvroIndexedRecordConverter<T extends IndexedRecord> extends GroupConverter
 
     @Override
     public void start() {
-      this.map = new HashMap<String, V>();
+      this.map = new HashMap<>();
     }
 
     @Override

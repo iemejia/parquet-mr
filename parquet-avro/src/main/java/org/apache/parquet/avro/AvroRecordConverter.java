@@ -33,20 +33,16 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.LinkedHashMap;
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Conversion;
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
-import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.reflect.AvroIgnore;
 import org.apache.avro.reflect.AvroName;
-import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.avro.reflect.Stringable;
 import org.apache.avro.specific.SpecificData;
@@ -54,7 +50,6 @@ import org.apache.avro.util.ClassUtils;
 import org.apache.parquet.Preconditions;
 import org.apache.parquet.avro.AvroConverters.FieldStringConverter;
 import org.apache.parquet.avro.AvroConverters.FieldStringableConverter;
-import org.apache.parquet.filter2.predicate.SchemaCompatibilityValidator;
 import org.apache.parquet.io.InvalidRecordException;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.io.api.GroupConverter;
@@ -88,7 +83,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
   private final Schema avroSchema;
 
   private final GenericData model;
-  private final Map<Schema.Field, Object> recordDefaults = new HashMap<Schema.Field, Object>();
+  private final Map<Schema.Field, Object> recordDefaults = new HashMap<>();
 
   public AvroRecordConverter(MessageType parquetSchema, Schema avroSchema,
                              GenericData baseModel) {
@@ -112,7 +107,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
     this.model = (model == null ? ReflectData.get() : model);
     this.converters = new Converter[parquetSchema.getFieldCount()];
 
-    Map<String, Integer> avroFieldIndexes = new HashMap<String, Integer>();
+    Map<String, Integer> avroFieldIndexes = new HashMap<>();
     int avroFieldIndex = 0;
     for (Schema.Field field: avroSchema.getFields()) {
         avroFieldIndexes.put(field.name(), avroFieldIndex++);
@@ -176,7 +171,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
   // this was taken from Avro's ReflectData
   private static Map<String, Class<?>> getFieldsByName(Class<?> recordClass,
                                                        boolean excludeJava) {
-    Map<String, Class<?>> fields = new LinkedHashMap<String, Class<?>>();
+    Map<String, Class<?>> fields = new LinkedHashMap<>();
 
     if (recordClass != null) {
       Class<?> current = recordClass;
@@ -336,12 +331,10 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
       return CharSequence.class;
     }
 
-    switch (GenericData.StringType.valueOf(name)) {
-      case String:
-        return String.class;
-      default:
-        return CharSequence.class; // will use Utf8
+    if (GenericData.StringType.valueOf(name) == GenericData.StringType.String) {
+      return String.class;
     }
+    return CharSequence.class; // will use Utf8
   }
 
   private static <T> Class<T> getDatumClass(Schema schema, GenericData model) {
@@ -381,9 +374,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
 
       try {
         return (Class<T>) getClassMethod.invoke(schema);
-      } catch (IllegalAccessException e) {
-        return null;
-      } catch (InvocationTargetException e) {
+      } catch (IllegalAccessException | InvocationTargetException e) {
         return null;
       }
     }
@@ -459,7 +450,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
     private final ParentValueContainer parent;
     private final Schema avroSchema;
     private final Converter converter;
-    private Class<?> containerClass;
+    private final Class<?> containerClass;
     private Collection<Object> container;
 
     public AvroCollectionConverter(ParentValueContainer parent, GroupType type,
@@ -476,7 +467,6 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
         // the element type is the repeated type (and required)
         converter = newConverter(elementSchema, repeatedType, model, new ParentValueContainer() {
           @Override
-          @SuppressWarnings("unchecked")
           public void add(Object value) {
             container.add(value);
           }
@@ -505,9 +495,9 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
     @SuppressWarnings("unchecked")
     private Collection<Object> newContainer() {
       if (containerClass == null) {
-        return new GenericData.Array<Object>(0, avroSchema);
+        return new GenericData.Array<>(0, avroSchema);
       } else if (containerClass.isAssignableFrom(ArrayList.class)) {
-        return new ArrayList<Object>();
+        return new ArrayList<>();
       } else {
         // not need to use the data model to instantiate because it resolved
         // the class, which used the correct ClassLoader
@@ -535,7 +525,6 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
         Schema nonNullElementSchema = AvroSchemaConverter.getNonNull(elementSchema);
         this.elementConverter = newConverter(nonNullElementSchema, elementType, model, new ParentValueContainer() {
           @Override
-          @SuppressWarnings("unchecked")
           public void add(Object value) {
             ElementConverter.this.element = value;
           }
@@ -577,23 +566,21 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
   static final class AvroArrayConverter extends GroupConverter {
 
     private final ParentValueContainer parent;
-    private final Schema avroSchema;
     private final Converter converter;
-    private Class<?> elementClass;
+    private final Class<?> elementClass;
     private Collection<?> container;
 
     public AvroArrayConverter(ParentValueContainer parent, GroupType type,
                               Schema avroSchema, GenericData model,
                               Class<?> arrayClass) {
       this.parent = parent;
-      this.avroSchema = avroSchema;
 
       Preconditions.checkArgument(arrayClass.isArray(),
           "Cannot convert non-array: " + arrayClass.getName());
       this.elementClass = arrayClass.getComponentType();
 
       ParentValueContainer setter = createSetterAndContainer();
-      Schema elementSchema = this.avroSchema.getElementType();
+      Schema elementSchema = avroSchema.getElementType();
       Type repeatedType = type.getType(0);
 
       // always determine whether the repeated type is the element type by
@@ -638,11 +625,10 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
       } else if (elementClass == double.class) {
         parent.add(((DoubleArrayList) container).toDoubleArray());
       } else {
-        parent.add(((ArrayList) container).toArray());
+        parent.add(container.toArray());
       }
     }
 
-    @SuppressWarnings("unchecked")
     private ParentValueContainer createSetterAndContainer() {
       if (elementClass == boolean.class) {
         final BooleanArrayList list = new BooleanArrayList();
@@ -718,7 +704,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
         };
       } else {
         // this will end up as Object[]
-        final List<Object> list = new ArrayList<Object>();
+        final List<Object> list = new ArrayList<>();
         this.container = list;
         return new ParentValueContainer() {
           @Override
@@ -863,10 +849,8 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
     } else if (elementSchema != null &&
         elementSchema.getType() == Schema.Type.RECORD) {
       Schema schemaFromRepeated = CONVERTER.convert(repeatedType.asGroupType());
-      if (checkReaderWriterCompatibility(elementSchema, schemaFromRepeated)
-          .getType() == COMPATIBLE) {
-        return true;
-      }
+      return checkReaderWriterCompatibility(elementSchema, schemaFromRepeated)
+        .getType() == COMPATIBLE;
     }
     return false;
   }
@@ -952,7 +936,7 @@ class AvroRecordConverter<T> extends AvroConverters.AvroGroupConverter {
     @SuppressWarnings("unchecked")
     private Map<K, V> newMap() {
       if (mapClass == null || mapClass.isAssignableFrom(HashMap.class)) {
-        return new HashMap<K, V>();
+        return new HashMap<>();
       } else {
         return (Map<K, V>) ReflectData.newInstance(mapClass, schema);
       }

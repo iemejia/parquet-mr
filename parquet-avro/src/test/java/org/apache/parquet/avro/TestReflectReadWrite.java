@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,7 +50,7 @@ public class TestReflectReadWrite {
     AvroReadSupport.setAvroDataSupplier(conf, ReflectDataSupplier.class);
 
     Path path = writePojosToParquetFile(10, CompressionCodecName.UNCOMPRESSED, false);
-    try(ParquetReader<Pojo> reader = new AvroParquetReader<Pojo>(conf, path)) {
+    try(ParquetReader<Pojo> reader = new AvroParquetReader<>(conf, path)) {
       Pojo object = getPojo();
       for (int i = 0; i < 10; i++) {
         assertEquals(object, reader.read());
@@ -66,7 +66,7 @@ public class TestReflectReadWrite {
     AvroReadSupport.setAvroDataSupplier(conf, GenericDataSupplier.class);
 
     Path path = writePojosToParquetFile(2, CompressionCodecName.UNCOMPRESSED, false);
-    try(ParquetReader<GenericRecord> reader = new AvroParquetReader<GenericRecord>(conf, path)) {
+    try(ParquetReader<GenericRecord> reader = new AvroParquetReader<>(conf, path)) {
       GenericRecord object = getGenericPojoUtf8();
       for (int i = 0; i < 2; i += 1) {
         assertEquals(object, reader.read());
@@ -89,18 +89,18 @@ public class TestReflectReadWrite {
     record.put("mystring", new Utf8("Hello"));
     record.put("myenum", new GenericData.EnumSymbol(
         schema.getField("myenum").schema(), "A"));
-    Map<CharSequence, CharSequence> map = new HashMap<CharSequence, CharSequence>();
+    Map<CharSequence, CharSequence> map = new HashMap<>();
     map.put(new Utf8("a"), new Utf8("1"));
     map.put(new Utf8("b"), new Utf8("2"));
     record.put("mymap", map);
-    record.put("myshortarray", new GenericData.Array<Integer>(
-        schema.getField("myshortarray").schema(), Lists.newArrayList(1, 2)));
-    record.put("myintarray", new GenericData.Array<Integer>(
-        schema.getField("myintarray").schema(), Lists.newArrayList(1, 2)));
-    record.put("mystringarray", new GenericData.Array<Utf8>(
-        schema.getField("mystringarray").schema(), Lists.newArrayList(new Utf8("a"), new Utf8("b"))));
-    record.put("mylist", new GenericData.Array<Utf8>(
-        schema.getField("mylist").schema(), Lists.newArrayList(new Utf8("a"), new Utf8("b"), new Utf8("c"))));
+    record.put("myshortarray", new GenericData.Array<>(
+      schema.getField("myshortarray").schema(), Lists.newArrayList(1, 2)));
+    record.put("myintarray", new GenericData.Array<>(
+      schema.getField("myintarray").schema(), Lists.newArrayList(1, 2)));
+    record.put("mystringarray", new GenericData.Array<>(
+      schema.getField("mystringarray").schema(), Lists.newArrayList(new Utf8("a"), new Utf8("b"))));
+    record.put("mylist", new GenericData.Array<>(
+      schema.getField("mylist").schema(), Lists.newArrayList(new Utf8("a"), new Utf8("b"), new Utf8("c"))));
     return record;
   }
 
@@ -116,7 +116,7 @@ public class TestReflectReadWrite {
     object.mybytes = new byte[] { 1, 2, 3, 4 };
     object.mystring = "Hello";
     object.myenum = E.A;
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("a", "1");
     map.put("b", "2");
     object.mymap = map;
@@ -150,22 +150,22 @@ public class TestReflectReadWrite {
     return path;
   }
 
-  public static enum E {
+  public enum E {
     A, B
   }
 
-  public static class Pojo {
-    public boolean myboolean;
-    public byte mybyte;
-    public short myshort;
+  static class Pojo {
+    boolean myboolean;
+    byte mybyte;
+    short myshort;
     // no char until https://issues.apache.org/jira/browse/AVRO-1458 is fixed
-    public int myint;
-    public long mylong;
-    public float myfloat;
-    public double mydouble;
-    public byte[] mybytes;
-    public String mystring;
-    public E myenum;
+    int myint;
+    long mylong;
+    float myfloat;
+    double mydouble;
+    byte[] mybytes;
+    String mystring;
+    E myenum;
     private Map<String, String> mymap;
     private short[] myshortarray;
     private int[] myintarray;

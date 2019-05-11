@@ -19,7 +19,6 @@
 package org.apache.parquet.avro;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.IndexedRecord;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.parquet.avro.AvroWriteSupport;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
@@ -44,7 +43,7 @@ public class AvroParquetOutputFormat<T> extends ParquetOutputFormat<T> {
   }
 
   public AvroParquetOutputFormat() {
-    super(new AvroWriteSupport<T>());
+    super(new AvroWriteSupport<>());
   }
 
   /**

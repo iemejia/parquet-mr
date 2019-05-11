@@ -133,7 +133,7 @@ public class AvroWriteSupport<T> extends WriteSupport<T> {
       this.listWriter = new ThreeLevelListWriter();
     }
 
-    Map<String, String> extraMetaData = new HashMap<String, String>();
+    Map<String, String> extraMetaData = new HashMap<>();
     extraMetaData.put(AvroReadSupport.AVRO_SCHEMA_METADATA_KEY, rootAvroSchema.toString());
     return new WriteContext(rootSchema, extraMetaData);
   }

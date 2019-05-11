@@ -19,6 +19,7 @@
 package org.apache.parquet.avro;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.apache.parquet.filter.ColumnPredicates.equalTo;
 import static org.apache.parquet.filter.ColumnRecordFilter.column;
@@ -132,9 +133,9 @@ public class TestSpecificReadWrite {
     Car vwPassat = getVwPassat();
     Car bmwMini  = getBmwMini();
 
-    try(ParquetWriter<Car> writer = new AvroParquetWriter<Car>(path, Car.SCHEMA$,
-        CompressionCodecName.UNCOMPRESSED, DEFAULT_BLOCK_SIZE/128, DEFAULT_PAGE_SIZE/128,
-        false)) {
+    try(ParquetWriter<Car> writer = new AvroParquetWriter<>(path, Car.SCHEMA$,
+      CompressionCodecName.UNCOMPRESSED, DEFAULT_BLOCK_SIZE / 128, DEFAULT_PAGE_SIZE / 128,
+      false)) {
       for (int i = 0; i < 10000; i++) {
         writer.write(vwPolo);
         writer.write(vwPassat);
@@ -143,8 +144,8 @@ public class TestSpecificReadWrite {
       writer.write(bmwMini); // only write BMW in last block
     }
 
-    try(ParquetReader<Car> reader = new AvroParquetReader<Car>(testConf, path, column("make",
-        equalTo("BMW")))) {
+    try(ParquetReader<Car> reader = new AvroParquetReader<>(testConf, path, column("make",
+      equalTo("BMW")))) {
       assertEquals(getBmwMini().toString(), reader.read().toString());
       assertNull(reader.read());
     }
@@ -164,15 +165,15 @@ public class TestSpecificReadWrite {
   public void testFilterOnSubAttribute() throws IOException {
     Path path = writeCarsToParquetFile(1, CompressionCodecName.UNCOMPRESSED, false);
 
-    ParquetReader<Car> reader = new AvroParquetReader<Car>(testConf, path, column("engine.type", equalTo(EngineType.DIESEL)));
+    ParquetReader<Car> reader = new AvroParquetReader<>(testConf, path, column("engine.type", equalTo(EngineType.DIESEL)));
     assertEquals(reader.read().toString(), getVwPassat().toString());
     assertNull(reader.read());
 
-    reader = new AvroParquetReader<Car>(testConf, path, column("engine.capacity", equalTo(1.4f)));
+    reader = new AvroParquetReader<>(testConf, path, column("engine.capacity", equalTo(1.4f)));
     assertEquals(getVwPolo().toString(), reader.read().toString());
     assertNull(reader.read());
 
-    reader = new AvroParquetReader<Car>(testConf, path, column("engine.hasTurboCharger", equalTo(true)));
+    reader = new AvroParquetReader<>(testConf, path, column("engine.hasTurboCharger", equalTo(true)));
     assertEquals(getBmwMini().toString(), reader.read().toString());
     assertNull(reader.read());
   }
@@ -186,7 +187,7 @@ public class TestSpecificReadWrite {
     List<Schema.Field> fields = schema.getFields();
 
     //Schema.Parser parser = new Schema.Parser();
-    List<Schema.Field> projectedFields = new ArrayList<Schema.Field>();
+    List<Schema.Field> projectedFields = new ArrayList<>();
     for (Schema.Field field : fields) {
       String name = field.name();
       if ("optionalExtra".equals(name) ||
@@ -203,14 +204,14 @@ public class TestSpecificReadWrite {
     projectedSchema.setFields(projectedFields);
     AvroReadSupport.setRequestedProjection(conf, projectedSchema);
 
-    try(ParquetReader<Car> reader = new AvroParquetReader<Car>(conf, path)) {
+    try(ParquetReader<Car> reader = new AvroParquetReader<>(conf, path)) {
       for (Car car = reader.read(); car != null; car = reader.read()) {
-        assertEquals(car.getDoors() != null, true);
-        assertEquals(car.getEngine() != null, true);
-        assertEquals(car.getMake() != null, true);
-        assertEquals(car.getModel() != null, true);
-        assertEquals(car.getYear() != null, true);
-        assertEquals(car.getVin() != null, true);
+        assertNotNull(car.getDoors());
+        assertNotNull(car.getEngine());
+        assertNotNull(car.getMake());
+        assertNotNull(car.getModel());
+        assertNotNull(car.getYear());
+        assertNotNull(car.getVin());
         assertNull(car.getOptionalExtra());
         assertNull(car.getServiceHistory());
       }
@@ -225,12 +226,12 @@ public class TestSpecificReadWrite {
 
     try(ParquetReader<NewCar> reader = new AvroParquetReader<>(conf, path)) {
       for (NewCar car = reader.read(); car != null; car = reader.read()) {
-        assertEquals(car.getEngine() != null, true);
-        assertEquals(car.getBrand() != null, true);
-        assertEquals(car.getYear() != null, true);
-        assertEquals(car.getVin() != null, true);
-        assertEquals(car.getDescription() == null, true);
-        assertEquals(car.getOpt() == 5, true);
+        assertNotNull(car.getEngine());
+        assertNotNull(car.getBrand());
+        assertNotNull(car.getYear());
+        assertNotNull(car.getVin());
+        assertNull(car.getDescription());
+        assertEquals(5, car.getOpt());
       }
     }
   }
@@ -260,7 +261,7 @@ public class TestSpecificReadWrite {
     return path;
   }
 
-  public static Car getVwPolo() {
+  private static Car getVwPolo() {
     String vin = "WVWDB4505LK000001";
     return Car.newBuilder()
         .setYear(2010)
@@ -274,12 +275,12 @@ public class TestSpecificReadWrite {
         .setOptionalExtra(
             Stereo.newBuilder().setMake("Blaupunkt").setSpeakers(4).build())
         .setServiceHistory(ImmutableList.of(
-            Service.newBuilder().setDate(1325376000l).setMechanic("Jim").build(),
-            Service.newBuilder().setDate(1356998400l).setMechanic("Mike").build()))
+            Service.newBuilder().setDate(1325376000L).setMechanic("Jim").build(),
+            Service.newBuilder().setDate(1356998400L).setMechanic("Mike").build()))
         .build();
   }
 
-  public static Car getVwPassat() {
+  private static Car getVwPassat() {
     String vin = "WVWDB4505LK000002";
     return Car.newBuilder()
         .setYear(2010)
@@ -293,11 +294,11 @@ public class TestSpecificReadWrite {
         .setOptionalExtra(
             LeatherTrim.newBuilder().setColour("Black").build())
         .setServiceHistory(ImmutableList.of(
-            Service.newBuilder().setDate(1325376000l).setMechanic("Jim").build()))
+            Service.newBuilder().setDate(1325376000L).setMechanic("Jim").build()))
         .build();
   }
 
-  public static Car getBmwMini() {
+  private static Car getBmwMini() {
     String vin = "WBABA91060AL00003";
     return Car.newBuilder()
         .setYear(2010)
@@ -310,7 +311,7 @@ public class TestSpecificReadWrite {
             .setCapacity(1.6f).setHasTurboCharger(true).build())
         .setOptionalExtra(null)
         .setServiceHistory(ImmutableList.of(
-            Service.newBuilder().setDate(1356998400l).setMechanic("Mike").build()))
+            Service.newBuilder().setDate(1356998400L).setMechanic("Mike").build()))
         .build();
   }
 }

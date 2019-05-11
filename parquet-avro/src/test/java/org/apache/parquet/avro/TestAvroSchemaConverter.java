@@ -103,13 +103,12 @@ public class TestAvroSchemaConverter {
       "}\n";
 
   private void testAvroToParquetConversion(
-      Schema avroSchema, String schemaString) throws Exception {
+      Schema avroSchema, String schemaString) {
     testAvroToParquetConversion(new Configuration(false), avroSchema, schemaString);
   }
 
   private void testAvroToParquetConversion(
-      Configuration conf, Schema avroSchema, String schemaString)
-      throws Exception {
+      Configuration conf, Schema avroSchema, String schemaString) {
     AvroSchemaConverter avroSchemaConverter = new AvroSchemaConverter(conf);
     MessageType schema = avroSchemaConverter.convert(avroSchema);
     MessageType expectedMT = MessageTypeParser.parseMessageType(schemaString);
@@ -118,13 +117,12 @@ public class TestAvroSchemaConverter {
   }
 
   private void testParquetToAvroConversion(
-      Schema avroSchema, String schemaString) throws Exception {
+      Schema avroSchema, String schemaString) {
     testParquetToAvroConversion(new Configuration(false), avroSchema, schemaString);
   }
 
   private void testParquetToAvroConversion(
-      Configuration conf, Schema avroSchema, String schemaString)
-      throws Exception {
+      Configuration conf, Schema avroSchema, String schemaString) {
     AvroSchemaConverter avroSchemaConverter = new AvroSchemaConverter(conf);
     Schema schema = avroSchemaConverter.convert(MessageTypeParser.parseMessageType
         (schemaString));
@@ -133,13 +131,12 @@ public class TestAvroSchemaConverter {
   }
 
   private void testRoundTripConversion(
-      Schema avroSchema, String schemaString) throws Exception {
+      Schema avroSchema, String schemaString) {
     testRoundTripConversion(new Configuration(), avroSchema, schemaString);
   }
 
   private void testRoundTripConversion(
-      Configuration conf, Schema avroSchema, String schemaString)
-      throws Exception {
+      Configuration conf, Schema avroSchema, String schemaString) {
     AvroSchemaConverter avroSchemaConverter = new AvroSchemaConverter(conf);
     MessageType schema = avroSchemaConverter.convert(avroSchema);
     MessageType expectedMT = MessageTypeParser.parseMessageType(schemaString);
@@ -274,7 +271,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testParquetMapWithNonStringKeyFails() throws Exception {
+  public void testParquetMapWithNonStringKeyFails() {
     MessageType parquetSchema = MessageTypeParser.parseMessageType(
         "message myrecord {\n" +
             "  required group mymap (MAP) {\n" +
@@ -289,11 +286,11 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testOptionalFields() throws Exception {
+  public void testOptionalFields() {
     Schema schema = Schema.createRecord("record1", null, null, false);
     Schema optionalInt = optional(Schema.create(INT));
-    schema.setFields(Arrays.asList(
-        new Schema.Field("myint", optionalInt, null, NullNode.getInstance())
+    schema.setFields(Collections.singletonList(
+      new Schema.Field("myint", optionalInt, null, NullNode.getInstance())
     ));
     testRoundTripConversion(
         schema,
@@ -303,11 +300,11 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testOptionalMapValue() throws Exception {
+  public void testOptionalMapValue() {
     Schema schema = Schema.createRecord("record1", null, null, false);
     Schema optionalIntMap = Schema.createMap(optional(Schema.create(INT)));
-    schema.setFields(Arrays.asList(
-        new Schema.Field("myintmap", optionalIntMap, null, null)
+    schema.setFields(Collections.singletonList(
+      new Schema.Field("myintmap", optionalIntMap, null, null)
     ));
     testRoundTripConversion(
         schema,
@@ -322,11 +319,11 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testOptionalArrayElement() throws Exception {
+  public void testOptionalArrayElement() {
     Schema schema = Schema.createRecord("record1", null, null, false);
     Schema optionalIntArray = Schema.createArray(optional(Schema.create(INT)));
-    schema.setFields(Arrays.asList(
-        new Schema.Field("myintarray", optionalIntArray, null, null)
+    schema.setFields(Collections.singletonList(
+      new Schema.Field("myintarray", optionalIntArray, null, null)
     ));
     testRoundTripConversion(
         NEW_BEHAVIOR, schema,
@@ -340,14 +337,14 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testUnionOfTwoTypes() throws Exception {
+  public void testUnionOfTwoTypes() {
     Schema schema = Schema.createRecord("record2", null, null, false);
     Schema multipleTypes = Schema.createUnion(Arrays.asList(Schema.create(Schema.Type
             .NULL),
         Schema.create(INT),
         Schema.create(Schema.Type.FLOAT)));
-    schema.setFields(Arrays.asList(
-        new Schema.Field("myunion", multipleTypes, null, NullNode.getInstance())));
+    schema.setFields(Collections.singletonList(
+      new Schema.Field("myunion", multipleTypes, null, NullNode.getInstance())));
 
     // Avro union is modelled using optional data members of the different
     // types. This does not translate back into an Avro union
@@ -362,7 +359,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testArrayOfOptionalRecords() throws Exception {
+  public void testArrayOfOptionalRecords() {
     Schema innerRecord = Schema.createRecord("element", null, null, false);
     Schema optionalString = optional(Schema.create(Schema.Type.STRING));
     innerRecord.setFields(Lists.newArrayList(
@@ -389,7 +386,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testArrayOfOptionalRecordsOldBehavior() throws Exception {
+  public void testArrayOfOptionalRecordsOldBehavior() {
     Schema innerRecord = Schema.createRecord("InnerRecord", null, null, false);
     Schema optionalString = optional(Schema.create(Schema.Type.STRING));
     innerRecord.setFields(Lists.newArrayList(
@@ -415,7 +412,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testOldAvroListOfLists() throws Exception {
+  public void testOldAvroListOfLists() {
     Schema listOfLists = optional(Schema.createArray(Schema.createArray(
         Schema.create(INT))));
     Schema schema = Schema.createRecord("AvroCompatListInList", null, null, false);
@@ -444,7 +441,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testOldThriftListOfLists() throws Exception {
+  public void testOldThriftListOfLists() {
     Schema listOfLists = optional(Schema.createArray(Schema.createArray(
         Schema.create(INT))));
     Schema schema = Schema.createRecord("ThriftCompatListInList", null, null, false);
@@ -474,7 +471,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testUnknownTwoLevelListOfLists() throws Exception {
+  public void testUnknownTwoLevelListOfLists() {
     // This tests the case where we don't detect a 2-level list by the repeated
     // group's name, but it must be 2-level because the repeated group doesn't
     // contain an optional or repeated element as required for 3-level lists
@@ -507,7 +504,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testParquetMapWithoutMapKeyValueAnnotation() throws Exception {
+  public void testParquetMapWithoutMapKeyValueAnnotation() {
     Schema schema = Schema.createRecord("myrecord", null, null, false);
     Schema map = Schema.createMap(Schema.create(INT));
     schema.setFields(Collections.singletonList(new Schema.Field("mymap", map, null, null)));
@@ -526,7 +523,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testDecimalBytesType() throws Exception {
+  public void testDecimalBytesType() {
     Schema schema = Schema.createRecord("myrecord", null, null, false);
     Schema decimal = LogicalTypes.decimal(9, 2).addToSchema(
         Schema.create(Schema.Type.BYTES));
@@ -540,7 +537,7 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testDecimalFixedType() throws Exception {
+  public void testDecimalFixedType() {
     Schema schema = Schema.createRecord("myrecord", null, null, false);
     Schema decimal = LogicalTypes.decimal(9, 2).addToSchema(
         Schema.createFixed("dec", null, null, 8));
@@ -554,10 +551,10 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testDecimalIntegerType() throws Exception {
+  public void testDecimalIntegerType() {
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field(
-            "dec", Schema.create(INT), null, null)));
+      Collections.singletonList(new Schema.Field(
+        "dec", Schema.create(INT), null, null)));
 
     // the decimal portion is lost because it isn't valid in Avro
     testParquetToAvroConversion(expected,
@@ -567,9 +564,9 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testDecimalLongType() throws Exception {
+  public void testDecimalLongType() {
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("dec", Schema.create(LONG), null, null)));
+      Collections.singletonList(new Schema.Field("dec", Schema.create(LONG), null, null)));
 
     // the decimal portion is lost because it isn't valid in Avro
     testParquetToAvroConversion(expected,
@@ -579,10 +576,10 @@ public class TestAvroSchemaConverter {
   }
 
   @Test
-  public void testDateType() throws Exception {
+  public void testDateType() {
     Schema date = LogicalTypes.date().addToSchema(Schema.create(INT));
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("date", date, null, null)));
+      Collections.singletonList(new Schema.Field("date", date, null, null)));
 
     testRoundTripConversion(expected,
         "message myrecord {\n" +
@@ -599,20 +596,15 @@ public class TestAvroSchemaConverter {
       }
 
       assertThrows("Should not allow TIME_MICROS with " + primitive,
-          IllegalArgumentException.class, new Runnable() {
-            @Override
-            public void run() {
-              new AvroSchemaConverter().convert(message(type));
-            }
-          });
+          IllegalArgumentException.class, () -> new AvroSchemaConverter().convert(message(type)));
     }
   }
 
   @Test
-  public void testTimeMillisType() throws Exception {
+  public void testTimeMillisType() {
     Schema date = LogicalTypes.timeMillis().addToSchema(Schema.create(INT));
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("time", date, null, null)));
+      Collections.singletonList(new Schema.Field("time", date, null, null)));
 
     testRoundTripConversion(expected,
         "message myrecord {\n" +
@@ -629,20 +621,15 @@ public class TestAvroSchemaConverter {
       }
 
       assertThrows("Should not allow TIME_MICROS with " + primitive,
-          IllegalArgumentException.class, new Runnable() {
-            @Override
-            public void run() {
-              new AvroSchemaConverter().convert(message(type));
-            }
-          });
+          IllegalArgumentException.class, () -> new AvroSchemaConverter().convert(message(type)));
     }
   }
 
   @Test
-  public void testTimeMicrosType() throws Exception {
+  public void testTimeMicrosType() {
     Schema date = LogicalTypes.timeMicros().addToSchema(Schema.create(LONG));
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("time", date, null, null)));
+      Collections.singletonList(new Schema.Field("time", date, null, null)));
 
     testRoundTripConversion(expected,
         "message myrecord {\n" +
@@ -659,20 +646,15 @@ public class TestAvroSchemaConverter {
       }
 
       assertThrows("Should not allow TIME_MICROS with " + primitive,
-          IllegalArgumentException.class, new Runnable() {
-            @Override
-            public void run() {
-              new AvroSchemaConverter().convert(message(type));
-            }
-          });
+          IllegalArgumentException.class, () -> new AvroSchemaConverter().convert(message(type)));
     }
   }
 
   @Test
-  public void testTimestampMillisType() throws Exception {
+  public void testTimestampMillisType() {
     Schema date = LogicalTypes.timestampMillis().addToSchema(Schema.create(LONG));
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("timestamp", date, null, null)));
+      Collections.singletonList(new Schema.Field("timestamp", date, null, null)));
 
     testRoundTripConversion(expected,
         "message myrecord {\n" +
@@ -689,20 +671,15 @@ public class TestAvroSchemaConverter {
       }
 
       assertThrows("Should not allow TIMESTAMP_MILLIS with " + primitive,
-          IllegalArgumentException.class, new Runnable() {
-            @Override
-            public void run() {
-              new AvroSchemaConverter().convert(message(type));
-            }
-          });
+          IllegalArgumentException.class, () -> new AvroSchemaConverter().convert(message(type)));
     }
   }
 
   @Test
-  public void testTimestampMicrosType() throws Exception {
+  public void testTimestampMicrosType() {
     Schema date = LogicalTypes.timestampMicros().addToSchema(Schema.create(LONG));
     Schema expected = Schema.createRecord("myrecord", null, null, false,
-        Arrays.asList(new Schema.Field("timestamp", date, null, null)));
+      Collections.singletonList(new Schema.Field("timestamp", date, null, null)));
 
     testRoundTripConversion(expected,
         "message myrecord {\n" +
@@ -719,22 +696,17 @@ public class TestAvroSchemaConverter {
       }
 
       assertThrows("Should not allow TIMESTAMP_MICROS with " + primitive,
-          IllegalArgumentException.class, new Runnable() {
-            @Override
-            public void run() {
-              new AvroSchemaConverter().convert(message(type));
-            }
-          });
+          IllegalArgumentException.class, () -> new AvroSchemaConverter().convert(message(type)));
     }
   }
 
-  public static Schema optional(Schema original) {
+  private static Schema optional(Schema original) {
     return Schema.createUnion(Lists.newArrayList(
         Schema.create(Schema.Type.NULL),
         original));
   }
 
-  public static MessageType message(PrimitiveType primitive) {
+  private static MessageType message(PrimitiveType primitive) {
     return Types.buildMessage()
         .addField(primitive)
         .named("myrecord");
@@ -746,8 +718,8 @@ public class TestAvroSchemaConverter {
    * @param expected An Exception class that the Runnable should throw
    * @param runnable A Runnable that is expected to throw the exception
    */
-  public static void assertThrows(
-      String message, Class<? extends Exception> expected, Runnable runnable) {
+  private static void assertThrows(
+    String message, Class<? extends Exception> expected, Runnable runnable) {
     try {
       runnable.run();
       Assert.fail("No exception was thrown (" + message + "), expected: " +

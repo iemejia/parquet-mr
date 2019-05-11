@@ -21,7 +21,7 @@ package org.apache.parquet.avro;
 import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 public class TestSpecificInputOutputFormat {
   private static final Logger LOG = LoggerFactory.getLogger(TestSpecificInputOutputFormat.class);
 
-  public static Car nextRecord(int i) {
+  private static Car nextRecord(int i) {
     String vin = "1VXBR12EXCP000000";
     Car.Builder carBuilder = Car.newBuilder()
         .setDoors(2)
@@ -79,7 +79,7 @@ public class TestSpecificInputOutputFormat {
     return carBuilder.build();
   }
 
-  public static class MyMapper extends Mapper<LongWritable, Text, Void, Car> {
+  private static class MyMapper extends Mapper<LongWritable, Text, Void, Car> {
 
     @Override
     public void run(Context context) throws IOException ,InterruptedException {
@@ -89,7 +89,7 @@ public class TestSpecificInputOutputFormat {
     }
   }
 
-  public static class MyMapper2 extends Mapper<Void, Car, Void, Car> {
+  private static class MyMapper2 extends Mapper<Void, Car, Void, Car> {
     @Override
     protected void map(Void key, Car car, Context context) throws IOException ,InterruptedException {
       // Note: Car can be null because of predicate pushdown defined by an UnboundedRecordFilter (see below)
@@ -100,7 +100,7 @@ public class TestSpecificInputOutputFormat {
 
   }
 
-  public static class MyMapperShort extends
+  private static class MyMapperShort extends
       Mapper<Void, ShortCar, Void, ShortCar> {
     @Override
     protected void map(Void key, ShortCar car, Context context)
@@ -114,11 +114,11 @@ public class TestSpecificInputOutputFormat {
 
   }
 
-  public static class ElectricCarFilter implements UnboundRecordFilter {
+  static class ElectricCarFilter implements UnboundRecordFilter {
 
     private final UnboundRecordFilter filter;
 
-    public ElectricCarFilter() {
+    ElectricCarFilter() {
       filter = ColumnRecordFilter.column("engine.type", ColumnPredicates.equalTo(EngineType.ELECTRIC));
     }
 
@@ -128,10 +128,10 @@ public class TestSpecificInputOutputFormat {
     }
   }
 
-  final Configuration conf = new Configuration();
-  final Path inputPath = new Path("src/test/java/org/apache/parquet/avro/TestSpecificInputOutputFormat.java");
-  final Path parquetPath = new Path("target/test/hadoop/TestSpecificInputOutputFormat/parquet");
-  final Path outputPath = new Path("target/test/hadoop/TestSpecificInputOutputFormat/out");
+  private final Configuration conf = new Configuration();
+  private final Path inputPath = new Path("src/test/java/org/apache/parquet/avro/TestSpecificInputOutputFormat.java");
+  private final Path parquetPath = new Path("target/test/hadoop/TestSpecificInputOutputFormat/parquet");
+  private final Path outputPath = new Path("target/test/hadoop/TestSpecificInputOutputFormat/out");
 
   @Before
   public void createParquetFile() throws Exception {
@@ -196,7 +196,7 @@ public class TestSpecificInputOutputFormat {
       while ((car = out.read()) != null) {
         if (previousCar != null) {
           // Testing reference equality here. The "model" field should be dictionary-encoded.
-          assertTrue(car.getModel() == previousCar.getModel());
+          assertSame(car.getModel(), previousCar.getModel());
         }
         // Make sure that predicate push down worked as expected
         if (car.getEngine().getType() == EngineType.PETROL) {

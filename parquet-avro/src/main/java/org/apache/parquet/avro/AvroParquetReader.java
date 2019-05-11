@@ -45,11 +45,11 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
    */
   @Deprecated
   public static <T> Builder<T> builder(Path file) {
-    return new Builder<T>(file);
+    return new Builder<>(file);
   }
 
   public static <T> Builder<T> builder(InputFile file) {
-    return new Builder<T>(file);
+    return new Builder<>(file);
   }
 
   /**
@@ -59,7 +59,7 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
    */
   @Deprecated
   public AvroParquetReader(Path file) throws IOException {
-    super(file, new AvroReadSupport<T>());
+    super(file, new AvroReadSupport<>());
   }
 
   /**
@@ -70,7 +70,7 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
    */
   @Deprecated
   public AvroParquetReader(Path file, UnboundRecordFilter unboundRecordFilter) throws IOException {
-    super(file, new AvroReadSupport<T>(), unboundRecordFilter);
+    super(file, new AvroReadSupport<>(), unboundRecordFilter);
   }
 
   /**
@@ -81,7 +81,7 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
    */
   @Deprecated
   public AvroParquetReader(Configuration conf, Path file) throws IOException {
-    super(conf, file, new AvroReadSupport<T>());
+    super(conf, file, new AvroReadSupport<>());
   }
 
   /**
@@ -93,7 +93,7 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
    */
   @Deprecated
   public AvroParquetReader(Configuration conf, Path file, UnboundRecordFilter unboundRecordFilter) throws IOException {
-    super(conf, file, new AvroReadSupport<T>(), unboundRecordFilter);
+    super(conf, file, new AvroReadSupport<>(), unboundRecordFilter);
   }
 
   public static class Builder<T> extends ParquetReader.Builder<T> {
@@ -140,7 +140,7 @@ public class AvroParquetReader<T> extends ParquetReader<T> {
       } else {
         conf.setBoolean(AvroReadSupport.AVRO_COMPATIBILITY, enableCompatibility);
       }
-      return new AvroReadSupport<T>(model);
+      return new AvroReadSupport<>(model);
     }
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.codehaus.jackson.node.NullNode;
 import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 
-public class AvroTestUtil {
+class AvroTestUtil {
 
   public static Schema record(String name, Schema.Field... fields) {
     Schema record = Schema.createRecord(name, null, null, false);
@@ -77,23 +77,21 @@ public class AvroTestUtil {
   }
 
   public static <D> List<D> read(GenericData model, Schema schema, File file) throws IOException {
-    List<D> data = new ArrayList<D>();
+    List<D> data = new ArrayList<>();
     Configuration conf = new Configuration(false);
     AvroReadSupport.setRequestedProjection(conf, schema);
     AvroReadSupport.setAvroReadSchema(conf, schema);
-    ParquetReader<D> fileReader = AvroParquetReader
-        .<D>builder(new Path(file.toString()))
-        .withDataModel(model) // reflect disables compatibility
-        .withConf(conf)
-        .build();
+    // reflect disables compatibility
 
-    try {
+    try (ParquetReader<D> fileReader = AvroParquetReader
+      .<D>builder(new Path(file.toString()))
+      .withDataModel(model) // reflect disables compatibility
+      .withConf(conf)
+      .build()) {
       D datum;
       while ((datum = fileReader.read()) != null) {
         data.add(datum);
       }
-    } finally {
-      fileReader.close();
     }
 
     return data;
@@ -103,18 +101,15 @@ public class AvroTestUtil {
   public static <D> File write(TemporaryFolder temp, GenericData model, Schema schema, D... data) throws IOException {
     File file = temp.newFile();
     Assert.assertTrue(file.delete());
-    ParquetWriter<D> writer = AvroParquetWriter
-        .<D>builder(new Path(file.toString()))
-        .withDataModel(model)
-        .withSchema(schema)
-        .build();
 
-    try {
+    try (ParquetWriter<D> writer = AvroParquetWriter
+      .<D>builder(new Path(file.toString()))
+      .withDataModel(model)
+      .withSchema(schema)
+      .build()) {
       for (D datum : data) {
         writer.write(datum);
       }
-    } finally {
-      writer.close();
     }
 
     return file;

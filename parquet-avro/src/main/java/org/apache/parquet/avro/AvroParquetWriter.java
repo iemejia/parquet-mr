@@ -36,11 +36,11 @@ import org.apache.parquet.io.OutputFile;
 public class AvroParquetWriter<T> extends ParquetWriter<T> {
 
   public static <T> Builder<T> builder(Path file) {
-    return new Builder<T>(file);
+    return new Builder<>(file);
   }
 
   public static <T> Builder<T> builder(OutputFile file) {
-    return new Builder<T>(file);
+    return new Builder<>(file);
   }
 
   /** Create a new {@link AvroParquetWriter}.
@@ -56,7 +56,7 @@ public class AvroParquetWriter<T> extends ParquetWriter<T> {
   public AvroParquetWriter(Path file, Schema avroSchema,
       CompressionCodecName compressionCodecName, int blockSize,
       int pageSize) throws IOException {
-    super(file, AvroParquetWriter.<T>writeSupport(avroSchema, SpecificData.get()),
+    super(file, AvroParquetWriter.writeSupport(avroSchema, SpecificData.get()),
 	      compressionCodecName, blockSize, pageSize);
   }
 
@@ -74,7 +74,7 @@ public class AvroParquetWriter<T> extends ParquetWriter<T> {
   public AvroParquetWriter(Path file, Schema avroSchema,
                            CompressionCodecName compressionCodecName, int blockSize,
                            int pageSize, boolean enableDictionary) throws IOException {
-    super(file, AvroParquetWriter.<T>writeSupport(avroSchema, SpecificData.get()),
+    super(file, AvroParquetWriter.writeSupport(avroSchema, SpecificData.get()),
         compressionCodecName, blockSize, pageSize, enableDictionary,
         DEFAULT_IS_VALIDATING_ENABLED);
   }
@@ -109,7 +109,7 @@ public class AvroParquetWriter<T> extends ParquetWriter<T> {
                            int blockSize, int pageSize, boolean enableDictionary,
                            Configuration conf) throws IOException {
     this(file,
-        AvroParquetWriter.<T>writeSupport(conf, avroSchema, SpecificData.get()),
+        AvroParquetWriter.writeSupport(conf, avroSchema, SpecificData.get()),
         compressionCodecName, blockSize, pageSize,
         enableDictionary, DEFAULT_IS_VALIDATING_ENABLED, DEFAULT_WRITER_VERSION,
         conf);
@@ -125,7 +125,6 @@ public class AvroParquetWriter<T> extends ParquetWriter<T> {
    * @param pageSize See parquet write up. Blocks are subdivided into pages for alignment and other purposes.
    * @param enableDictionary Whether to use a dictionary to compress columns.
    * @param conf The Configuration to use.
-   * @throws IOException
    */
   AvroParquetWriter(Path file, WriteSupport<T> writeSupport,
                            CompressionCodecName compressionCodecName,
@@ -139,15 +138,15 @@ public class AvroParquetWriter<T> extends ParquetWriter<T> {
 
   private static <T> WriteSupport<T> writeSupport(Schema avroSchema,
                                                   GenericData model) {
-    return new AvroWriteSupport<T>(
-        new AvroSchemaConverter().convert(avroSchema), avroSchema, model);
+    return new AvroWriteSupport<>(
+      new AvroSchemaConverter().convert(avroSchema), avroSchema, model);
   }
 
   private static <T> WriteSupport<T> writeSupport(Configuration conf,
                                                   Schema avroSchema,
                                                   GenericData model) {
-    return new AvroWriteSupport<T>(
-        new AvroSchemaConverter(conf).convert(avroSchema), avroSchema, model);
+    return new AvroWriteSupport<>(
+      new AvroSchemaConverter(conf).convert(avroSchema), avroSchema, model);
   }
 
   public static class Builder<T> extends ParquetWriter.Builder<T, Builder<T>> {

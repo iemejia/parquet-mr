@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -53,18 +53,18 @@ public class TestCircularReferences {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  public static class Reference extends LogicalType {
+  static class Reference extends LogicalType {
     private static final String REFERENCE = "reference";
     private static final String REF_FIELD_NAME = "ref-field-name";
 
     private final String refFieldName;
 
-    public Reference(String refFieldName) {
+    Reference(String refFieldName) {
       super(REFERENCE);
       this.refFieldName = refFieldName;
     }
 
-    public Reference(Schema schema) {
+    Reference(Schema schema) {
       super(REFERENCE);
       this.refFieldName = schema.getProp(REF_FIELD_NAME);
     }
@@ -81,7 +81,7 @@ public class TestCircularReferences {
       return REFERENCE;
     }
 
-    public String getRefFieldName() {
+    String getRefFieldName() {
       return refFieldName;
     }
 
@@ -94,18 +94,18 @@ public class TestCircularReferences {
     }
   }
 
-  public static class Referenceable extends LogicalType {
+  static class Referenceable extends LogicalType {
     private static final String REFERENCEABLE = "referenceable";
     private static final String ID_FIELD_NAME = "id-field-name";
 
     private final String idFieldName;
 
-    public Referenceable(String idFieldName) {
+    Referenceable(String idFieldName) {
       super(REFERENCEABLE);
       this.idFieldName = idFieldName;
     }
 
-    public Referenceable(Schema schema) {
+    Referenceable(Schema schema) {
       super(REFERENCEABLE);
       this.idFieldName = schema.getProp(ID_FIELD_NAME);
     }
@@ -122,7 +122,7 @@ public class TestCircularReferences {
       return REFERENCEABLE;
     }
 
-    public String getIdFieldName() {
+    String getIdFieldName() {
       return idFieldName;
     }
 
@@ -138,40 +138,30 @@ public class TestCircularReferences {
 
   @BeforeClass
   public static void addReferenceTypes() {
-    LogicalTypes.register(Referenceable.REFERENCEABLE, new LogicalTypes.LogicalTypeFactory() {
-      @Override
-      public LogicalType fromSchema(Schema schema) {
-        return new Referenceable(schema);
-      }
-    });
-    LogicalTypes.register(Reference.REFERENCE, new LogicalTypes.LogicalTypeFactory() {
-      @Override
-      public LogicalType fromSchema(Schema schema) {
-        return new Reference(schema);
-      }
-    });
+    LogicalTypes.register(Referenceable.REFERENCEABLE, Referenceable::new);
+    LogicalTypes.register(Reference.REFERENCE, Reference::new);
   }
 
-  public static class ReferenceManager {
+  static class ReferenceManager {
     private interface Callback {
       void set(Object referenceable);
     }
 
-    private final Map<Long, Object> references = new HashMap<Long, Object>();
-    private final Map<Object, Long> ids = new IdentityHashMap<Object, Long>();
-    private final Map<Long, List<Callback>> callbacksById = new HashMap<Long, List<Callback>>();
+    private final Map<Long, Object> references = new HashMap<>();
+    private final Map<Object, Long> ids = new IdentityHashMap<>();
+    private final Map<Long, List<Callback>> callbacksById = new HashMap<>();
     private final ReferenceableTracker tracker = new ReferenceableTracker();
     private final ReferenceHandler handler = new ReferenceHandler();
 
-    public ReferenceableTracker getTracker() {
+    ReferenceableTracker getTracker() {
       return tracker;
     }
 
-    public ReferenceHandler getHandler() {
+    ReferenceHandler getHandler() {
       return handler;
     }
 
-    public class ReferenceableTracker extends Conversion<IndexedRecord> {
+    class ReferenceableTracker extends Conversion<IndexedRecord> {
       @Override
       @SuppressWarnings("unchecked")
       public Class<IndexedRecord> getConvertedType() {
@@ -219,7 +209,7 @@ public class TestCircularReferences {
       }
     }
 
-    public class ReferenceHandler extends Conversion<IndexedRecord> {
+    class ReferenceHandler extends Conversion<IndexedRecord> {
       @Override
       @SuppressWarnings("unchecked")
       public Class<IndexedRecord> getConvertedType() {
@@ -242,18 +232,9 @@ public class TestCircularReferences {
             record.put(refField.pos(), references.get(id));
 
           } else {
-            List<Callback> callbacks = callbacksById.get(id);
-            if (callbacks == null) {
-              callbacks = new ArrayList<Callback>();
-              callbacksById.put(id, callbacks);
-            }
+            List<Callback> callbacks = callbacksById.computeIfAbsent(id, k -> new ArrayList<>());
             // add a callback to resolve this reference when the id is available
-            callbacks.add(new Callback() {
-              @Override
-              public void set(Object referenceable) {
-                record.put(refField.pos(), referenceable);
-              }
-            });
+            callbacks.add(referenceable -> record.put(refField.pos(), referenceable));
           }
         }
 
@@ -279,7 +260,7 @@ public class TestCircularReferences {
       private final int index;
       private final Object data;
 
-      public HijackingIndexedRecord(IndexedRecord wrapped, int index, Object data) {
+      HijackingIndexedRecord(IndexedRecord wrapped, int index, Object data) {
         this.wrapped = wrapped;
         this.index = index;
         this.data = data;
@@ -315,7 +296,7 @@ public class TestCircularReferences {
     Schema parentSchema = Schema.createRecord("Parent", null, null, false);
 
     Schema placeholderSchema = Schema.createRecord("Placeholder", null, null, false);
-    List<Schema.Field> placeholderFields = new ArrayList<Schema.Field>();
+    List<Schema.Field> placeholderFields = new ArrayList<>();
     placeholderFields.add( // at least one field is needed to be a valid schema
         new Schema.Field("id", Schema.create(Schema.Type.LONG), null, null));
     placeholderSchema.setFields(placeholderFields);
@@ -329,13 +310,13 @@ public class TestCircularReferences {
 
     Reference parentRef = new Reference("parent");
 
-    List<Schema.Field> childFields = new ArrayList<Schema.Field>();
+    List<Schema.Field> childFields = new ArrayList<>();
     childFields.add(new Schema.Field("c", Schema.create(Schema.Type.STRING), null, null));
     childFields.add(new Schema.Field("parent", parentRefSchema, null, null));
     Schema childSchema = parentRef.addToSchema(
         Schema.createRecord("Child", null, null, false, childFields));
 
-    List<Schema.Field> parentFields = new ArrayList<Schema.Field>();
+    List<Schema.Field> parentFields = new ArrayList<>();
     parentFields.add(new Schema.Field("id", Schema.create(Schema.Type.LONG), null, null));
     parentFields.add(new Schema.Field("p", Schema.create(Schema.Type.STRING), null, null));
     parentFields.add(new Schema.Field("child", childSchema, null, null));

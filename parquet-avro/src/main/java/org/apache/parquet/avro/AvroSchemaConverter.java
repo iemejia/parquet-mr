@@ -125,7 +125,7 @@ public class AvroSchemaConverter {
   }
 
   private List<Type> convertFields(List<Schema.Field> fields) {
-    List<Type> types = new ArrayList<Type>();
+    List<Type> types = new ArrayList<>();
     for (Schema.Field field : fields) {
       if (field.schema().getType().equals(Schema.Type.NULL)) {
         continue; // Avro nulls are not encoded, unless they are null unions
@@ -201,7 +201,7 @@ public class AvroSchemaConverter {
   }
 
   private Type convertUnion(String fieldName, Schema schema, Type.Repetition repetition) {
-    List<Schema> nonNullSchemas = new ArrayList<Schema>(schema.getTypes().size());
+    List<Schema> nonNullSchemas = new ArrayList<>(schema.getTypes().size());
     // Found any schemas in the union? Required for the edge case, where the union contains only a single type.
     boolean foundNullSchema = false;
     for (Schema childSchema : schema.getTypes()) {
@@ -230,7 +230,7 @@ public class AvroSchemaConverter {
   }
 
   private Type convertUnionToGroupType(String fieldName, Type.Repetition repetition, List<Schema> nonNullSchemas) {
-    List<Type> unionTypes = new ArrayList<Type>(nonNullSchemas.size());
+    List<Type> unionTypes = new ArrayList<>(nonNullSchemas.size());
     int index = 0;
     for (Schema childSchema : nonNullSchemas) {
       unionTypes.add( convertField("member" + index++, childSchema, Type.Repetition.OPTIONAL));
@@ -251,7 +251,7 @@ public class AvroSchemaConverter {
   }
 
   private Schema convertFields(String name, List<Type> parquetFields) {
-    List<Schema.Field> fields = new ArrayList<Schema.Field>();
+    List<Schema.Field> fields = new ArrayList<>();
     for (Type parquetType : parquetFields) {
       Schema fieldSchema = convertField(parquetType);
       if (parquetType.isRepetition(REPEATED)) {
@@ -261,7 +261,7 @@ public class AvroSchemaConverter {
             parquetType.getName(), optional(fieldSchema), null, NULL_VALUE));
       } else { // REQUIRED
         fields.add(new Schema.Field(
-            parquetType.getName(), fieldSchema, null, (Object) null));
+            parquetType.getName(), fieldSchema, null, null));
       }
     }
     Schema schema = Schema.createRecord(name, null, null, false);

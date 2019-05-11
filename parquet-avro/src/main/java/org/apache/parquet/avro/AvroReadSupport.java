@@ -37,7 +37,7 @@ import org.apache.parquet.schema.MessageType;
  */
 public class AvroReadSupport<T> extends ReadSupport<T> {
 
-  public static String AVRO_REQUESTED_PROJECTION = "parquet.avro.projection";
+  public static final String AVRO_REQUESTED_PROJECTION = "parquet.avro.projection";
   private static final String AVRO_READ_SCHEMA = "parquet.avro.read.schema";
 
   static final String AVRO_SCHEMA_METADATA_KEY = "parquet.avro.schema";
@@ -46,7 +46,7 @@ public class AvroReadSupport<T> extends ReadSupport<T> {
   private static final String AVRO_READ_SCHEMA_METADATA_KEY = "avro.read.schema";
 
   // TODO: for 2.0.0, make this final (breaking change)
-  public static String AVRO_DATA_SUPPLIER = "parquet.avro.data.supplier";
+  public static final String AVRO_DATA_SUPPLIER = "parquet.avro.data.supplier";
 
   public static final String AVRO_COMPATIBILITY = "parquet.avro.compatible";
   public static final boolean AVRO_DEFAULT_COMPATIBILITY = true;
@@ -88,7 +88,7 @@ public class AvroReadSupport<T> extends ReadSupport<T> {
                           Map<String, String> keyValueMetaData,
                           MessageType fileSchema) {
     MessageType projection = fileSchema;
-    Map<String, String> metadata = new LinkedHashMap<String, String>();
+    Map<String, String> metadata = new LinkedHashMap<>();
 
     String requestedProjectionString = configuration.get(AVRO_REQUESTED_PROJECTION);
     if (requestedProjectionString != null) {
@@ -135,7 +135,7 @@ public class AvroReadSupport<T> extends ReadSupport<T> {
     if (compatEnabled != null && Boolean.valueOf(compatEnabled)) {
       return newCompatMaterializer(parquetSchema, avroSchema, model);
     }
-    return new AvroRecordMaterializer<T>(parquetSchema, avroSchema, model);
+    return new AvroRecordMaterializer<>(parquetSchema, avroSchema, model);
   }
 
   @SuppressWarnings("unchecked")

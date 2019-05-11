@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -51,14 +51,14 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public class TestStringBehavior {
-  public static Schema SCHEMA = null;
-  public static BigDecimal BIG_DECIMAL = new BigDecimal("3.14");
+  private static Schema SCHEMA = null;
+  private static final BigDecimal BIG_DECIMAL = new BigDecimal("3.14");
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  public Path parquetFile;
-  public File avroFile;
+  private Path parquetFile;
+  private File avroFile;
 
   @BeforeClass
   public static void readSchemaFile() throws IOException {
@@ -303,7 +303,7 @@ public class TestStringBehavior {
         BIG_DECIMAL, parquetRecord.stringable_class);
   }
 
-  public static class ReflectRecord {
+  static class ReflectRecord {
     private String default_class;
     private String string_class;
     @Stringable
@@ -313,7 +313,7 @@ public class TestStringBehavior {
     private Map<BigDecimal, Integer> stringable_map;
   }
 
-  public static class ReflectRecordJavaClass {
+  static class ReflectRecordJavaClass {
     // test avro.java.string behavior
     @AvroSchema("{\"type\": \"string\", \"avro.java.string\": \"CharSequence\"}")
     private String default_class;
@@ -322,7 +322,7 @@ public class TestStringBehavior {
     private BigDecimal stringable_class;
   }
 
-  public static Class<?> keyClass(Object obj) {
+  private static Class<?> keyClass(Object obj) {
     Assert.assertTrue("Should be a map", obj instanceof Map);
     Map<?, ?> map = (Map<?, ?>) obj;
     return Iterables.getFirst(map.keySet(), null).getClass();

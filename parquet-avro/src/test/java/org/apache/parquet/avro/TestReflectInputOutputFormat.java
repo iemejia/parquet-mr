@@ -20,11 +20,9 @@ package org.apache.parquet.avro;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.ReflectData;
@@ -52,14 +50,14 @@ import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 public class TestReflectInputOutputFormat {
   private static final Logger LOG = LoggerFactory.getLogger(TestReflectInputOutputFormat.class);
 
 
-  public static class Service {
+  static class Service {
     private long date;
     private String mechanic;
 
@@ -71,9 +69,7 @@ public class TestReflectInputOutputFormat {
       Service service = (Service) o;
 
       if (date != service.date) return false;
-      if (!mechanic.equals(service.mechanic)) return false;
-
-      return true;
+      return mechanic.equals(service.mechanic);
     }
 
     @Override
@@ -84,11 +80,11 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static enum EngineType {
+  public enum EngineType {
     DIESEL, PETROL, ELECTRIC
   }
 
-  public static class Engine {
+  static class Engine {
     private EngineType type;
     private float capacity;
     private boolean hasTurboCharger;
@@ -102,9 +98,7 @@ public class TestReflectInputOutputFormat {
 
       if (Float.compare(engine.capacity, capacity) != 0) return false;
       if (hasTurboCharger != engine.hasTurboCharger) return false;
-      if (type != engine.type) return false;
-
-      return true;
+      return type == engine.type;
     }
 
     @Override
@@ -116,7 +110,7 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static class Stereo extends Extra {
+  static class Stereo extends Extra {
     private String make;
     private int speakers;
 
@@ -128,9 +122,7 @@ public class TestReflectInputOutputFormat {
       Stereo stereo = (Stereo) o;
 
       if (speakers != stereo.speakers) return false;
-      if (!make.equals(stereo.make)) return false;
-
-      return true;
+      return make.equals(stereo.make);
     }
 
     @Override
@@ -141,7 +133,7 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static class LeatherTrim extends Extra {
+  static class LeatherTrim extends Extra {
     private String colour;
 
     @Override
@@ -151,9 +143,7 @@ public class TestReflectInputOutputFormat {
 
       LeatherTrim that = (LeatherTrim) o;
 
-      if (!colour.equals(that.colour)) return false;
-
-      return true;
+      return colour.equals(that.colour);
     }
 
     @Override
@@ -163,9 +153,9 @@ public class TestReflectInputOutputFormat {
   }
 
   @Union({Void.class, Stereo.class, LeatherTrim.class})
-  public static class Extra {}
+  static class Extra {}
 
-  public static class Car {
+  static class Car {
     private long year;
     private String registration;
     private String make;
@@ -189,14 +179,12 @@ public class TestReflectInputOutputFormat {
       if (!engine.equals(car.engine)) return false;
       if (!make.equals(car.make)) return false;
       if (!model.equals(car.model)) return false;
-      if (optionalExtra != null ? !optionalExtra.equals(car.optionalExtra) : car.optionalExtra != null)
+      if (!Objects.equals(optionalExtra, car.optionalExtra))
         return false;
       if (!registration.equals(car.registration)) return false;
-      if (serviceHistory != null ? !serviceHistory.equals(car.serviceHistory) : car.serviceHistory != null)
+      if (!Objects.equals(serviceHistory, car.serviceHistory))
         return false;
-      if (!Arrays.equals(vin, car.vin)) return false;
-
-      return true;
+      return Arrays.equals(vin, car.vin);
     }
 
     @Override
@@ -214,9 +202,9 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static class ShortCar {
+  static class ShortCar {
     @Nullable
-    private String make = null;
+    private final String make = null;
     private Engine engine;
     private long year;
     private byte[] vin;
@@ -230,11 +218,9 @@ public class TestReflectInputOutputFormat {
 
       if (year != shortCar.year) return false;
       if (!engine.equals(shortCar.engine)) return false;
-      if (make != null ? !make.equals(shortCar.make) : shortCar.make != null)
+      if (!Objects.equals(make, shortCar.make))
         return false;
-      if (!Arrays.equals(vin, shortCar.vin)) return false;
-
-      return true;
+      return Arrays.equals(vin, shortCar.vin);
     }
 
     @Override
@@ -247,12 +233,12 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static final Schema CAR_SCHEMA = ReflectData.get()//AllowNulls.INSTANCE
+  private static final Schema CAR_SCHEMA = ReflectData.get()//AllowNulls.INSTANCE
       .getSchema(Car.class);
-  public static final Schema SHORT_CAR_SCHEMA = ReflectData.get()//AllowNulls.INSTANCE
+  private static final Schema SHORT_CAR_SCHEMA = ReflectData.get()//AllowNulls.INSTANCE
       .getSchema(ShortCar.class);
 
-  public static Car nextRecord(int i) {
+  private static Car nextRecord(int i) {
     Car car = new Car();
     car.doors = 2;
     car.make = "Tesla";
@@ -282,7 +268,7 @@ public class TestReflectInputOutputFormat {
     return car;
   }
 
-  public static class MyMapper extends Mapper<LongWritable, Text, Void, Car> {
+  private static class MyMapper extends Mapper<LongWritable, Text, Void, Car> {
     @Override
     public void run(Context context) throws IOException ,InterruptedException {
       for (int i = 0; i < 10; i++) {
@@ -291,7 +277,7 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  public static class MyMapper2 extends Mapper<Void, Car, Void, Car> {
+  private static class MyMapper2 extends Mapper<Void, Car, Void, Car> {
     @Override
     protected void map(Void key, Car car, Context context) throws IOException ,InterruptedException {
       // Note: Car can be null because of predicate pushdown defined by an UnboundedRecordFilter (see below)
@@ -302,7 +288,7 @@ public class TestReflectInputOutputFormat {
 
   }
 
-  public static class MyMapperShort extends
+  private static class MyMapperShort extends
       Mapper<Void, ShortCar, Void, ShortCar> {
     @Override
     protected void map(Void key, ShortCar car, Context context)
@@ -316,10 +302,10 @@ public class TestReflectInputOutputFormat {
 
   }
 
-  public static class ElectricCarFilter implements UnboundRecordFilter {
+  static class ElectricCarFilter implements UnboundRecordFilter {
     private final UnboundRecordFilter filter;
 
-    public ElectricCarFilter() {
+    ElectricCarFilter() {
       filter = ColumnRecordFilter.column("engine.type", ColumnPredicates.equalTo(org.apache.parquet.avro.EngineType.ELECTRIC));
     }
 
@@ -329,10 +315,10 @@ public class TestReflectInputOutputFormat {
     }
   }
 
-  final Configuration conf = new Configuration();
-  final Path inputPath = new Path("src/test/java/org/apache/parquet/avro/TestReflectInputOutputFormat.java");
-  final Path parquetPath = new Path("target/test/hadoop/TestReflectInputOutputFormat/parquet");
-  final Path outputPath = new Path("target/test/hadoop/TestReflectInputOutputFormat/out");
+  private final Configuration conf = new Configuration();
+  private final Path inputPath = new Path("src/test/java/org/apache/parquet/avro/TestReflectInputOutputFormat.java");
+  private final Path parquetPath = new Path("target/test/hadoop/TestReflectInputOutputFormat/parquet");
+  private final Path outputPath = new Path("target/test/hadoop/TestReflectInputOutputFormat/out");
 
   @Before
   public void createParquetFile() throws Exception {
@@ -397,14 +383,14 @@ public class TestReflectInputOutputFormat {
 
     final Path mapperOutput = new Path(outputPath.toString(),
         "part-m-00000.parquet");
-    try(final AvroParquetReader<Car> out = new AvroParquetReader<Car>(conf, mapperOutput)) {
+    try(final AvroParquetReader<Car> out = new AvroParquetReader<>(conf, mapperOutput)) {
       Car car;
       Car previousCar = null;
       int lineNumber = 0;
       while ((car = out.read()) != null) {
         if (previousCar != null) {
           // Testing reference equality here. The "model" field should be dictionary-encoded.
-          assertTrue(car.model == previousCar.model);
+          assertSame(car.model, previousCar.model);
         }
         // Make sure that predicate push down worked as expected
         if (car.engine.type == EngineType.PETROL) {
@@ -458,7 +444,7 @@ public class TestReflectInputOutputFormat {
     waitForJob(job);
 
     final Path mapperOutput = new Path(outputPath.toString(), "part-m-00000.parquet");
-    try(final AvroParquetReader<ShortCar> out = new AvroParquetReader<ShortCar>(conf, mapperOutput)) {
+    try(final AvroParquetReader<ShortCar> out = new AvroParquetReader<>(conf, mapperOutput)) {
       ShortCar car;
       int lineNumber = 0;
       while ((car = out.read()) != null) {

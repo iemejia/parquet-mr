@@ -27,11 +27,11 @@ import org.apache.parquet.schema.MessageType;
 
 class AvroCompatRecordMaterializer<T extends IndexedRecord> extends RecordMaterializer<T> {
 
-  private AvroIndexedRecordConverter<T> root;
+  private final AvroIndexedRecordConverter<T> root;
 
   public AvroCompatRecordMaterializer(MessageType requestedSchema, Schema avroSchema,
                                       GenericData baseModel) {
-    this.root = new AvroIndexedRecordConverter<T>(requestedSchema, avroSchema, baseModel);
+    this.root = new AvroIndexedRecordConverter<>(requestedSchema, avroSchema, baseModel);
   }
 
   @Override

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
@@ -46,20 +47,20 @@ import static org.junit.Assert.assertNull;
 public class TestInputOutputFormat {
   private static final Logger LOG = LoggerFactory.getLogger(TestInputOutputFormat.class);
 
-  private static Schema avroSchema;
+  private static final Schema avroSchema;
   static {
     avroSchema = Schema.createRecord("record1", null, null, false);
     avroSchema.setFields(
-        Arrays.asList(new Schema.Field("a",
-            Schema.createUnion(Arrays.asList(Schema.create(Schema.Type.INT), Schema.create(Schema.Type.NULL))),
-            null, null)));
+      Collections.singletonList(new Schema.Field("a",
+        Schema.createUnion(Arrays.asList(Schema.create(Schema.Type.INT), Schema.create(Schema.Type.NULL))),
+        null, null)));
   }
 
-  public static GenericRecord nextRecord(Integer i) {
+  private static GenericRecord nextRecord(Integer i) {
     return new GenericRecordBuilder(avroSchema).set("a", i).build();
-  };
+  }
 
-  public static class MyMapper extends Mapper<LongWritable, Text, Void, GenericRecord> {
+  private static class MyMapper extends Mapper<LongWritable, Text, Void, GenericRecord> {
 
     public void run(Context context) throws IOException ,InterruptedException {
       for (int i = 0; i < 10; i++) {
@@ -70,7 +71,7 @@ public class TestInputOutputFormat {
     }
   }
 
-  public static class MyMapper2 extends Mapper<Void, GenericRecord, LongWritable, Text> {
+  private static class MyMapper2 extends Mapper<Void, GenericRecord, LongWritable, Text> {
     protected void map(Void key, GenericRecord value, Context context) throws IOException ,InterruptedException {
       context.write(null, new Text(value.toString()));
     }

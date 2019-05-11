@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
  */
 package org.apache.parquet.avro;
 
+import java.util.Collections;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.LogicalType;
@@ -57,7 +58,7 @@ public class TestReflectLogicalTypes {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  public static final ReflectData REFLECT = new ReflectData();
+  private static final ReflectData REFLECT = new ReflectData();
 
   @BeforeClass
   public static void addUUID() {
@@ -82,7 +83,7 @@ public class TestReflectLogicalTypes {
   }
 
   // this can be static because the schema only comes from reflection
-  public static class DecimalRecordBytes {
+  static class DecimalRecordBytes {
     // scale is required and will not be set by the conversion
     @AvroSchema("{" +
         "\"type\": \"bytes\"," +
@@ -134,12 +135,12 @@ public class TestReflectLogicalTypes {
 
     File test = write(REFLECT, schema, record);
     Assert.assertEquals("Should match the decimal after round trip",
-        Arrays.asList(record),
+      Collections.singletonList(record),
         read(REFLECT, schema, test));
   }
 
   // this can be static because the schema only comes from reflection
-  public static class DecimalRecordFixed {
+  static class DecimalRecordFixed {
     // scale is required and will not be set by the conversion
     @AvroSchema("{" +
         "\"name\": \"decimal_9\"," +
@@ -193,7 +194,7 @@ public class TestReflectLogicalTypes {
 
     File test = write(REFLECT, schema, record);
     Assert.assertEquals("Should match the decimal after round trip",
-        Arrays.asList(record),
+      Collections.singletonList(record),
         read(REFLECT, schema, test));
   }
 
@@ -226,14 +227,8 @@ public class TestReflectLogicalTypes {
       }
 
       if (second == null) {
-        if (that.second != null) {
-          return false;
-        }
-      } else if (second.equals(that.second)) {
-        return false;
-      }
-
-      return true;
+        return that.second == null;
+      } else return !second.equals(that.second);
     }
 
     @Override
@@ -241,12 +236,12 @@ public class TestReflectLogicalTypes {
       return Arrays.hashCode(new Object[] {first, second});
     }
 
-    public static <X, Y> Pair<X, Y> of(X first, Y second) {
-      return new Pair<X, Y>(first, second);
+    static <X, Y> Pair<X, Y> of(X first, Y second) {
+      return new Pair<>(first, second);
     }
   }
 
-  public static class PairRecord {
+  static class PairRecord {
     @AvroSchema("{" +
         "\"name\": \"Pair\"," +
         "\"type\": \"record\"," +
@@ -260,7 +255,6 @@ public class TestReflectLogicalTypes {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testPairRecord() throws IOException {
     ReflectData model = new ReflectData();
     model.addLogicalTypeConversion(new Conversion<Pair>() {
@@ -309,9 +303,6 @@ public class TestReflectLogicalTypes {
 
     PairRecord record = new PairRecord();
     record.pair = Pair.of(34L, 35L);
-    List<PairRecord> expected = new ArrayList<PairRecord>();
-    expected.add(record);
-
     File test = write(model, schema, record);
     Pair<Long, Long> actual = AvroTestUtil
         .<PairRecord>read(model, schema, test)
@@ -534,7 +525,7 @@ public class TestReflectLogicalTypes {
     UUID u2 = UUID.randomUUID();
 
     GenericRecord expected = new GenericData.Record(stringArraySchema);
-    List<String> uuids = new ArrayList<String>();
+    List<String> uuids = new ArrayList<>();
     uuids.add(u1.toString());
     uuids.add(u2.toString());
     expected.put("uuids", uuids);
@@ -609,7 +600,8 @@ public class TestReflectLogicalTypes {
         read(REFLECT, stringArraySchema, test).get(0));
   }
 
-  private <D> File write(Schema schema, D... data) throws IOException {
+  @SafeVarargs
+  private final <D> File write(Schema schema, D... data) throws IOException {
     return write(ReflectData.get(), schema, data);
   }
 
