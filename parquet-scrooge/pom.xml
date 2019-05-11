@@ -26,7 +26,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>parquet-scrooge_${scala.binary.version}</artifactId>
+  <artifactId>parquet-scrooge_2.10</artifactId>
   <packaging>jar</packaging>
 
   <name>Apache Parquet Scrooge</name>
@@ -97,7 +97,7 @@
     </dependency>
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scrooge-core_${scala.binary.version}</artifactId>
+      <artifactId>scrooge-core_2.10</artifactId>
       <version>4.7.0</version>
     </dependency>
     <dependency>
