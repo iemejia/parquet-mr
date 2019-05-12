@@ -21,9 +21,7 @@
 # This script gets invoked by .travis.yml in the before_install step
 ################################################################################
 
-export THIFT_VERSION=0.12.0
-
-set -e
+set -ex
 date
 sudo apt-get update -qq
 sudo apt-get install -qq build-essential pv autoconf automake libtool curl make \
@@ -31,14 +29,19 @@ sudo apt-get install -qq build-essential pv autoconf automake libtool curl make 
    libevent-dev automake libtool flex bison pkg-config g++ libssl-dev xmlstarlet
 date
 pwd
-wget -nv http://archive.apache.org/dist/thrift/${THIFT_VERSION}/thrift-${THIFT_VERSION}.tar.gz
-tar zxf thrift-${THIFT_VERSION}.tar.gz
-(
-  cd thrift-${THIFT_VERSION}
+export THRIFT_HOME=$HOME/thrift-${THRIFT_VERSION}
+echo "$THRIFT_HOME"
+ls "$THRIFT_HOME"
+if [ ! -d "$THRIFT_HOME" ]; then
+  wget -nv -P "$HOME" "http://archive.apache.org/dist/thrift/${THRIFT_VERSION}/thrift-${THRIFT_VERSION}.tar.gz"
+  tar xf "$HOME/thrift-${THRIFT_VERSION}.tar.gz" -C "$HOME"
+  cd "$THRIFT_HOME"
   chmod +x ./configure
   ./configure --disable-gen-erl --disable-gen-hs --without-ruby --without-haskell --without-erlang --without-php --without-nodejs
-  sudo make install
-)
+fi
+cd "$THRIFT_HOME"
+sudo make install
+date
 branch_specific_script="dev/travis-before_install-${TRAVIS_BRANCH}.sh"
 if [[ -e "$branch_specific_script" ]]
 then

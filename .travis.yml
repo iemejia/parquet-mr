@@ -2,6 +2,7 @@ language: java
 
 env:
   global:
+    - THRIFT_VERSION=0.12.0
     - MAVEN_OPTS="-client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xverify:none"
     - HADOOP_PROFILE=default
   matrix:
@@ -11,6 +12,7 @@ env:
 cache:
   directories:
     - "$HOME/.m2"
+    - "$HOME/thrift-${THRIFT_VERSION}"
 
 before_install:
   - bash dev/travis-before_install.sh
