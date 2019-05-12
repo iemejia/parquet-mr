@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -21,7 +23,7 @@
 ################################################################################
 
 fail_the_build=
-reduced_pom="$(tempfile)"
+reduced_pom="$(mktemp)"
 shopt -s globstar # Enables ** to match files in subdirectories recursively
 for pom in **/pom.xml
 do

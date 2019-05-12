@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -31,11 +33,12 @@ date
 pwd
 wget -nv http://archive.apache.org/dist/thrift/${THIFT_VERSION}/thrift-${THIFT_VERSION}.tar.gz
 tar zxf thrift-${THIFT_VERSION}.tar.gz
-cd thrift-${THIFT_VERSION}
-chmod +x ./configure
-./configure --disable-gen-erl --disable-gen-hs --without-ruby --without-haskell --without-erlang --without-php --without-nodejs
-sudo make install
-cd ..
+(
+  cd thrift-${THIFT_VERSION}
+  chmod +x ./configure
+  ./configure --disable-gen-erl --disable-gen-hs --without-ruby --without-haskell --without-erlang --without-php --without-nodejs
+  sudo make install
+)
 branch_specific_script="dev/travis-before_install-${TRAVIS_BRANCH}.sh"
 if [[ -e "$branch_specific_script" ]]
 then

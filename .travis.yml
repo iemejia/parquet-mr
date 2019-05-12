@@ -1,10 +1,23 @@
 language: java
+
+env:
+  global:
+    - MAVEN_OPTS="-client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xverify:none"
+    - HADOOP_PROFILE=default
+  matrix:
+    - TEST_CODECS=uncompressed,brotli
+    - TEST_CODECS=gzip,snappy
+
+cache:
+  directories:
+    - "$HOME/.m2"
+
 before_install:
   - bash dev/travis-before_install.sh
 
-env:
-  - HADOOP_PROFILE=default TEST_CODECS=uncompressed,brotli
-  - HADOOP_PROFILE=default TEST_CODECS=gzip,snappy
-
 install: mvn install --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true -Dsource.skip=true | pv -fbi 60 > mvn_install.log || (cat mvn_install.log && false)
 script: mvn verify javadoc:javadoc -P $HADOOP_PROFILE
+
+before_cache:
+  - rm -Rf $HOME/.m2/repository/org/apache/parquet
+  - find $HOME/.m2/repository/ -name *SNAPSHOT | xargs rm -Rf
