@@ -26,4 +26,3 @@ RUN set -ex; \
     openjdk-8-jre \
     pv; \
   rm -rf /var/lib/apt/lists/*
-
