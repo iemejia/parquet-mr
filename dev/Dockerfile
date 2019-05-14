@@ -22,7 +22,7 @@ RUN set -ex; \
   apt-get update; \
   apt-get install -y \
     maven \
-    openjdk-8-jdk \
-    openjdk-8-jre \
+    openjdk-8-jdk-headless \
+    openjdk-8-jre-headless \
     pv; \
   rm -rf /var/lib/apt/lists/*
